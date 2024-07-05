@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 #intialize the pygame
 pygame.init()
 
@@ -24,7 +25,7 @@ playerX_change = 0
 
 #enemy
 enemyImg = pygame.image.load("ghost.png")
-enemyX = random.randint(0,800)
+enemyX = random.randint(0,735)
 enemyY = random.randint(50,150)
 enemyX_change = 0.1
 enemyY_change = 40
@@ -41,6 +42,8 @@ bulletX_change = 0
 bulletY_change = 0.3
 bullet_state = "ready"
 
+score = 0
+
 #blit means to draw on our game window
 def player(x,y):
     screen.blit(playerImg,(x, y))
@@ -55,7 +58,12 @@ def fire_bullet(x,y):
     screen.blit(bulletImg, (x+16 , y+10))
 
 
-
+def isCollision(enemyX,enemyY,bulletX,bulletY):
+    distance = math.sqrt((math.pow(enemyX-bulletX,2)) + (math.pow(enemyY-bulletY,2)))
+    if distance <27:
+        return True
+    else:
+        return False
 # the Game loop
 running = True
 while running:
@@ -79,8 +87,9 @@ while running:
                # print("D is pressed")
                 
             if event.key == pygame.K_SPACE:
-                if bullet_state is "ready":
-                    bulletX = playerX
+                if bullet_state is "ready": #checking if the bullet is on the screen
+                    #get current x coordinate of the sapaceship
+                    bulletX = playerX #bullet is not moving with the space ship
                     fire_bullet(bulletX, bulletY)
         
         if event.type == pygame.KEYUP:
@@ -109,12 +118,24 @@ while running:
     #bullet movement
 
     if bulletY<=0:
-        bulletY = 480
-        bullet_state = "ready"
+        bulletY = 480 
+        bullet_state = "ready" #able to shoot multiple bullets
 
     if bullet_state is "fire":
-        fire_bullet(bulletX, bulletY)
+        fire_bullet(bulletX, bulletY) #need to make sure the bullet is constantly updating 
         bulletY -= bulletY_change
+
+    #collision
+    collison = isCollision(enemyX,enemyY, bulletX, bulletY)
+    if collison:
+        bulletY= 480
+        bullet_state ="ready"
+        score+=10
+        print(score)
+        enemyX = random.randint(0,735)
+        enemyY = random.randint(50,150)
+
+
 
     player(playerX,playerY)
     enemy(enemyX,enemyY)
