@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+from pygame import mixer
 #intialize the pygame
 pygame.init()
 
@@ -10,7 +11,10 @@ screen = pygame.display.set_mode((800, 600))
 
 #background
 background = pygame.image.load("background5.jpeg")
- 
+
+#background sound
+mixer.music.load("background.wav")
+mixer.music.play(-1)
 #title and icon
 pygame.display.set_caption("Milind World")
 icon = pygame.image.load("chair.png")
@@ -47,19 +51,28 @@ bulletImg = pygame.image.load("bullet.png")
 bulletX = 0
 bulletY = 480
 bulletX_change = 0
-bulletY_change = 0.3
+bulletY_change = 1
 bullet_state = "ready"
 
-# 
+# font
 score_value = 0
 font = pygame.font.Font('freesansbold.ttf',32)
 
 textX = 10
 textY = 10
 
+#game over text
+over_font = pygame.font.Font('freesansbold.ttf',64)
+
 def show_score(x,y):
     score = font.render("Score : "+ str(score_value), True, (255,255,255))
     screen.blit(score,(x,y))
+
+
+def game_over_text():
+    over_text = over_font .render("GAME OVER",True,(255,255,255))
+    screen.blit(over_text,(200,250))
+
 
 #blit means to draw on our game window
 def player(x,y):
@@ -95,19 +108,22 @@ while running:
     #if a keystroke is pressed check whether its right or left
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
-                playerX_change = -0.3
+                playerX_change = -0.6
                #d print("A is pressed")
 
 
             if event.key == pygame.K_d:
-                playerX_change = 0.3
+                playerX_change = 0.6
                # print("D is pressed")
                 
             if event.key == pygame.K_SPACE:
                 if bullet_state is "ready": #checking if the bullet is on the screen
+                   bullet_sound = mixer.Sound("laser.wav")
+                   bullet_sound.play()
                     #get current x coordinate of the sapaceship
-                    bulletX = playerX #bullet is not moving with the space ship
-                    fire_bullet(bulletX, bulletY)
+                   bulletX = playerX #bullet is not moving with the space ship
+
+                   fire_bullet(bulletX, bulletY)
         
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a or event.key == pygame.K_d:
@@ -124,18 +140,27 @@ while running:
 
 #enemy movment
     for i in range(num_of_enemies):
+
+        #game pver
+        if enemyY[i] >600: 
+            for j in range(num_of_enemies):
+                enemyY[j] =2000
+            game_over_text()
+            break
         enemyX[i] += enemyX_change[i]
 
         if enemyX[i] <=0:
-            enemyX_change[i] = 0.1
+            enemyX_change[i] = .5
             enemyY[i] += enemyY_change[i] #this is making the enemy move further down
         elif enemyX[i] >= 736:
-            enemyX_change[i] = -0.1
+            enemyX_change[i] = -.5
             enemyY[i] += enemyY_change[i]
 
         #collision
         collison = isCollision(enemyX[i],enemyY[i], bulletX, bulletY)
         if collison:
+            explosion_sound = mixer.Sound("explosion.wav")
+            explosion_sound.play()
             bulletY= 480
             bullet_state ="ready"
             score_value+=10
